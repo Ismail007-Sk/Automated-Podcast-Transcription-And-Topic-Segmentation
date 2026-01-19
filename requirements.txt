@@ -1,0 +1,53 @@
+# Numerical computation
+numpy==1.26.4
+
+# Data handling (transcripts, metadata)
+pandas==2.3.3
+
+# Audio loading, resampling, silence trimming
+librosa==0.11.0
+
+# Read and write audio files (.wav)
+soundfile==0.13.1
+
+# Background noise reduction
+noisereduce==3.0.3
+
+# Speech-to-text transcription (OpenAI Whisper – local)
+openai-whisper==20250625
+
+# Audio format conversion (mp3 ↔ wav)
+ffmpeg-python==0.2.0
+
+# Text embeddings for topic segmentation
+sentence-transformers==5.2.0
+
+# Similarity, clustering, segmentation logic
+scikit-learn==1.7.2
+
+# Text preprocessing and sentence tokenization
+nltk==3.9.2
+
+# Progress bars for long-running tasks
+tqdm==4.67.1
+
+# Backend framework
+Django==4.2.11
+
+# Keeps only speech frames and removes non-speech parts
+silero-vad
+
+#Needed to compute WER and CER for transcription accuracy evaluation
+
+jiwer==3.0.4
+
+# cmake = https://cmake.org/download/
+# Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf Downloaded from hugging face ,Its actually The AI brain.
+# Phi-3 Mini (3.8B) – GGUF Q4
+# 👉 LLaMA-3-8B Q4_K_M (GGUF)
+
+# Deep learning backend (required for Whisper & Sentence-BERT)
+
+# uv pip install torch==2.7.1+cu118 torchvision==0.22.1+cu118 torchaudio==2.7.1+cu118 --index-url https://download.pytorch.org/whl/cu118
+# uv pip install llama-cpp-python --upgrade --force-reinstall --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu11
+# uv pip install -r requirements.txt

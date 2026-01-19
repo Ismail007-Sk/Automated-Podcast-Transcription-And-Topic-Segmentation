@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Audio</title>
+
+    <style>
+        :root {
+            --bg-black: #05060a;
+            --card-black: #0b0f19;
+            --neon-blue: #3b82f6;
+            --neon-blue-soft: #60a5fa;
+            --silver-light: #e5e7eb;
+            --silver-mid: #9ca3af;
+            --silver-dark: #6b7280;
+        }
+
+        body {
+                font-family: "Segoe UI", system-ui, sans-serif;
+                background:
+                    radial-gradient(circle at top, #0e1117, #020409),
+                    linear-gradient(180deg, #05070c, #000000);
+                min-height: 100vh;
+                margin: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: #e5e7eb;
+            }
+
+        .card {
+            width: 440px;
+            background: linear-gradient(
+                180deg,
+                #0b1020,
+                var(--card-black)
+            );
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow:
+                0 0 0 1px rgba(59,130,246,0.25),
+                0 25px 60px rgba(0,0,0,0.75);
+        }
+
+        h2 {
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 26px;
+            letter-spacing: 0.6px;
+            color: var(--silver-light);
+        }
+
+        h2 span {
+            color: var(--neon-blue);
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            background: #020617;
+            border: 1px solid rgba(148,163,184,0.25);
+            color: var(--silver-mid);
+        }
+
+        input[type="file"]::file-selector-button {
+            background: linear-gradient(
+                135deg,
+                #1d4ed8,
+                var(--neon-blue)
+            );
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            box-shadow: 0 0 12px rgba(59,130,246,0.8);
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            margin-top: 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(148,163,184,0.25);
+            background: linear-gradient(180deg, #020617, #020617);
+            color: var(--silver-light);
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        button[value="upload"] {
+            border-color: rgba(16,185,129,0.6);
+            box-shadow: inset 0 0 0 1px rgba(16,185,129,0.2);
+        }
+
+        button[value="process"] {
+            border-color: rgba(59,130,246,0.6);
+            box-shadow: inset 0 0 0 1px rgba(59,130,246,0.25);
+        }
+
+        button[value="cancel"] {
+            border-color: rgba(239,68,68,0.6);
+            box-shadow: inset 0 0 0 1px rgba(239,68,68,0.25);
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 0 18px rgba(59,130,246,0.35);
+        }
+
+        button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        hr {
+            margin: 26px 0;
+            border: none;
+            border-top: 1px solid rgba(148,163,184,0.25);
+        }
+
+        .uploaded {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #34d399;
+        }
+
+        .status {
+            text-align: center;
+            font-size: 14px;
+            color: var(--silver-mid);
+        }
+
+        #loader {
+            display: none;
+            text-align: center;
+            margin-top: 16px;
+            font-weight: 600;
+            color: var(--neon-blue-soft);
+        }
+
+        .result {
+            margin-top: 18px;
+            padding: 16px;
+            background: #020617;
+            border-radius: 12px;
+            border: 1px solid rgba(148,163,184,0.25);
+        }
+
+        .result a {
+            display: block;
+            text-decoration: none;
+            color: var(--neon-blue-soft);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .result a:hover {
+            text-shadow: 0 0 8px rgba(96,165,250,0.9);
+        }
+
+        .time {
+            text-align: center;
+            font-size: 13px;
+            color: var(--silver-dark);
+            margin-top: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="card">
+    <h2>🎧 Podcast <span>Audio Upload</span></h2>
+
+    <form id="audioForm" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <input type="file"
+               name="audio"
+               accept="audio/*"
+               {% if uploaded_file %}disabled{% else %}required{% endif %}>
+
+        {% if uploaded_file %}
+            <input type="hidden" name="uploaded_file" value="{{ uploaded_file }}">
+            <p class="uploaded">✔ Uploaded: {{ uploaded_file }}</p>
+        {% endif %}
+
+        <button type="submit" name="action" value="upload">
+            Upload Audio
+        </button>
+
+        <button id="processBtn"
+                type="submit"
+                name="action"
+                value="process"
+                formnovalidate
+                {% if not uploaded_file %}disabled{% endif %}>
+            Process Audio
+        </button>
+
+        <button type="submit" name="action" value="cancel">
+            Cancel
+        </button>
+    </form>
+
+    <hr>
+
+    <p class="status">{{ status }}</p>
+
+    <div id="loader">⏳ Processing audio…</div>
+
+    {% if done %}
+    <div class="result">
+        <a href="{{ transcription_file }}" download>⬇ Download Transcription</a>
+        <a href="{{ segmentation_file }}" download>⬇ Download Segmentation</a>
+
+        {% if time_taken %}
+            <p class="time">⏱ {{ time_taken }} seconds</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.getElementById("audioForm").addEventListener("submit", function () {
+    document.getElementById("loader").style.display = "block";
+});
+</script>
+
+</body>
+</html>

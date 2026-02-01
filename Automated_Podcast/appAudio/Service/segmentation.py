@@ -6,9 +6,11 @@ with LLaMA-assisted Human-like Chapter Generation
 from pathlib import Path
 import json
 import re
+import os
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-from llama_cpp import Llama
+from groq import Groq
+from dotenv import load_dotenv
 
 # =========================================================
 # PATH CONFIGURATION
@@ -18,16 +20,21 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 
 TRANSCRIPT_DIR = BASE_DIR / "appAudio" / "Service" / "Output" / "Transcription"
 SEGMENT_DIR = BASE_DIR / "appAudio" / "Service" / "Output" / "T_segmentation"
-MODEL_PATH = BASE_DIR / "models" / "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf"
 
 SEGMENT_DIR.mkdir(parents=True, exist_ok=True)
+
+# =========================================================
+# ENV & GROQ CLIENT
+# =========================================================
+
+load_dotenv()
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 # =========================================================
 # MODELS (Lazy Loaded)
 # =========================================================
 
 _embedder = None
-_llm = None
 
 
 def get_embedder():
@@ -35,19 +42,6 @@ def get_embedder():
     if _embedder is None:
         _embedder = SentenceTransformer("all-MiniLM-L6-v2")
     return _embedder
-
-
-def get_llm():
-    global _llm
-    if _llm is None:
-        _llm = Llama(
-            model_path=str(MODEL_PATH),
-            n_ctx=2048,
-            n_gpu_layers=8,
-            temperature=0.3,
-            verbose=False
-        )
-    return _llm
 
 
 # =========================================================
@@ -58,6 +52,7 @@ def sec_to_mmss(seconds):
     m = int(seconds // 60)
     s = int(seconds % 60)
     return f"{m:02d}:{s:02d}"
+
 
 # I use SentenceTransformer embeddings. 
 # These models work best on raw, natural text. 
@@ -74,12 +69,10 @@ def clean_text(text):
 
 
 # =========================================================
-# LLaMA TITLE GENERATION
+# LLaMA TITLE GENERATION (GROQ)
 # =========================================================
 
 def generate_llama_title(text):
-    llm = get_llm()
-
     prompt = f"""
 Create a short podcast chapter title.
 
@@ -94,8 +87,14 @@ Text:
 Title:
 """
 
-    response = llm(prompt, max_tokens=16, stop=["\n"])
-    title = response["choices"][0]["text"].strip()
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",   # ⚡ FAST & FREE
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=16,
+        temperature=0.3
+    )
+
+    title = response.choices[0].message.content.strip()
     return title if title else "General Discussion"
 
 
@@ -143,16 +142,6 @@ def segment_whisper_file(json_file: Path):
     blocks.append((block_start, len(texts) - 1))
 
     out_file = SEGMENT_DIR / f"{json_file.stem}_topics.txt"
-
-    # with open(out_file, "w", encoding="utf-8") as f:
-    #     f.write("00:00 - Introduction\n")
-    #     for s, e in blocks:
-    #         if starts[s] < 10:
-    #             continue
-    #         title = generate_llama_title(" ".join(texts[s:s+5]))
-    #         f.write(f"{sec_to_mmss(starts[s])} - {title}\n")
-    #     f.write(f"{sec_to_mmss(ends[-1])} - Conclusion\n")
-
 
     with open(out_file, "w", encoding="utf-8") as f:
         f.write("00:00 - Introduction\n")

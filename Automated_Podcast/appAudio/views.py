@@ -7,6 +7,10 @@ from .Service.transcription import transcribe_audio
 from .Service.segmentation import segment_from_json
 
 
+import json
+from django.http import JsonResponse
+from .Service.question import answer_from_transcript
+
 # --------------------------------------------------
 # Base paths
 # --------------------------------------------------
@@ -119,8 +123,8 @@ def upload_audio(request):
             seg_size = os.path.getsize(seg_dst) // 1024
 
             # ⏱ auto delete downloadable files
-            delete_later(trans_dst, delay=300)
-            delete_later(seg_dst, delay=300)
+            delete_later(trans_dst, delay=1000)
+            delete_later(seg_dst, delay=1000)
 
             # 🧹 immediate cleanup of raw audio
             if os.path.exists(file_path):
@@ -141,5 +145,24 @@ def upload_audio(request):
 
     return render(request, "upload.html")
 
+
+
 def home(request):
     return render(request, "home.html")
+
+
+
+# --------------------------------------------------
+# Chat / Q&A from Transcript
+# --------------------------------------------------
+def chat_from_transcript(request):
+    if request.method != "POST":
+        return JsonResponse({"answer": "Invalid request"})
+
+    data = json.loads(request.body)
+    question = data.get("question", "").strip()
+
+    answer = answer_from_transcript(question)
+    return JsonResponse({"answer": answer})
+
+

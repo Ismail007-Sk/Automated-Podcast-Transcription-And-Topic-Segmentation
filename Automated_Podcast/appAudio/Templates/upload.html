@@ -15,25 +15,21 @@
         }
 
         body {
-                font-family: "Segoe UI", system-ui, sans-serif;
-                background:
-                    radial-gradient(circle at top, #0e1117, #020409),
-                    linear-gradient(180deg, #05070c, #000000);
-                min-height: 100vh;
-                margin: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                color: #e5e7eb;
-            }
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background:
+                radial-gradient(circle at top, #0e1117, #020409),
+                linear-gradient(180deg, #05070c, #000000);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #e5e7eb;
+        }
 
         .card {
             width: 440px;
-            background: linear-gradient(
-                180deg,
-                #0b1020,
-                var(--card-black)
-            );
+            background: linear-gradient(180deg, #0b1020, var(--card-black));
             border-radius: 16px;
             padding: 32px;
             box-shadow:
@@ -63,21 +59,12 @@
         }
 
         input[type="file"]::file-selector-button {
-            background: linear-gradient(
-                135deg,
-                #1d4ed8,
-                var(--neon-blue)
-            );
+            background: linear-gradient(135deg, #1d4ed8, var(--neon-blue));
             border: none;
             padding: 8px 16px;
             border-radius: 8px;
             color: white;
             cursor: pointer;
-            transition: 0.2s;
-        }
-
-        input[type="file"]::file-selector-button:hover {
-            box-shadow: 0 0 12px rgba(59,130,246,0.8);
         }
 
         button {
@@ -86,31 +73,13 @@
             margin-top: 14px;
             border-radius: 10px;
             border: 1px solid rgba(148,163,184,0.25);
-            background: linear-gradient(180deg, #020617, #020617);
+            background: #020617;
             color: var(--silver-light);
             font-size: 15px;
-            font-weight: 500;
             cursor: pointer;
-            transition: 0.25s;
-        }
-
-        button[value="upload"] {
-            border-color: rgba(16,185,129,0.6);
-            box-shadow: inset 0 0 0 1px rgba(16,185,129,0.2);
-        }
-
-        button[value="process"] {
-            border-color: rgba(59,130,246,0.6);
-            box-shadow: inset 0 0 0 1px rgba(59,130,246,0.25);
-        }
-
-        button[value="cancel"] {
-            border-color: rgba(239,68,68,0.6);
-            box-shadow: inset 0 0 0 1px rgba(239,68,68,0.25);
         }
 
         button:hover:not(:disabled) {
-            transform: translateY(-1px);
             box-shadow: 0 0 18px rgba(59,130,246,0.35);
         }
 
@@ -127,7 +96,6 @@
 
         .uploaded {
             text-align: center;
-            margin-top: 10px;
             font-size: 13px;
             color: #34d399;
         }
@@ -142,7 +110,6 @@
             display: none;
             text-align: center;
             margin-top: 16px;
-            font-weight: 600;
             color: var(--neon-blue-soft);
         }
 
@@ -154,23 +121,43 @@
             border: 1px solid rgba(148,163,184,0.25);
         }
 
-        .result a {
-            display: block;
-            text-decoration: none;
-            color: var(--neon-blue-soft);
+        textarea {
+            width: 100%;
+            background: #020617;
+            border: 1px solid rgba(148,163,184,0.25);
+            border-radius: 10px;
+            padding: 12px;
+            color: #e5e7eb;
+            resize: none;
+        }
+
+        #answerBox {
+            margin-top: 12px;
+            padding: 12px;
+            background: #020617;
+            border-radius: 10px;
+            border: 1px solid rgba(148,163,184,0.25);
             font-size: 14px;
-            margin-bottom: 8px;
+            color: #9ca3af;
+            display: none;
         }
+        .qna-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            }
 
-        .result a:hover {
-            text-shadow: 0 0 8px rgba(96,165,250,0.9);
-        }
-
-        .time {
+            .qna-container textarea,
+            .qna-container button,
+            .qna-container #answerBox {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        .time-taken {
             text-align: center;
             font-size: 13px;
             color: var(--silver-dark);
-            margin-top: 8px;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -183,9 +170,7 @@
     <form id="audioForm" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <input type="file"
-               name="audio"
-               accept="audio/*"
+        <input type="file" name="audio" accept="audio/*"
                {% if uploaded_file %}disabled{% else %}required{% endif %}>
 
         {% if uploaded_file %}
@@ -193,45 +178,69 @@
             <p class="uploaded">✔ Uploaded: {{ uploaded_file }}</p>
         {% endif %}
 
-        <button type="submit" name="action" value="upload">
-            Upload Audio
-        </button>
-
-        <button id="processBtn"
-                type="submit"
-                name="action"
-                value="process"
-                formnovalidate
+        <button type="submit" name="action" value="upload">Upload Audio</button>
+        <button type="submit" name="action" value="process"
                 {% if not uploaded_file %}disabled{% endif %}>
             Process Audio
         </button>
-
-        <button type="submit" name="action" value="cancel">
-            Cancel
-        </button>
+        <button type="submit" name="action" value="cancel">Cancel</button>
     </form>
 
     <hr>
 
     <p class="status">{{ status }}</p>
-
     <div id="loader">⏳ Processing audio…</div>
 
     {% if done %}
     <div class="result">
-        <a href="{{ transcription_file }}" download>⬇ Download Transcription</a>
+        <a href="{{ transcription_file }}" download>⬇ Download Transcription</a><br>
         <a href="{{ segmentation_file }}" download>⬇ Download Segmentation</a>
 
         {% if time_taken %}
-            <p class="time">⏱ {{ time_taken }} seconds</p>
+            <p class="time-taken">⏱ Processed in {{ time_taken }} seconds</p>
         {% endif %}
     </div>
+
+    <hr>
+
+    <h2>💬 Ask from <span>Transcript</span></h2>
+
+    <div class="result qna-container">
+        <textarea id="questionInput" rows="3"
+            placeholder="Ask a question from the podcast transcript..."></textarea>
+
+        <button id="askBtn">Ask Question</button>
+
+    <div id="answerBox"></div>
+</div>
     {% endif %}
 </div>
 
 <script>
-document.getElementById("audioForm").addEventListener("submit", function () {
+document.getElementById("audioForm").addEventListener("submit", () => {
     document.getElementById("loader").style.display = "block";
+});
+
+document.getElementById("askBtn")?.addEventListener("click", async () => {
+    const question = document.getElementById("questionInput").value.trim();
+    const answerBox = document.getElementById("answerBox");
+
+    if (!question) return;
+
+    answerBox.style.display = "block";
+    answerBox.innerText = "⏳ Thinking...";
+
+    const response = await fetch("/chat/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({ question })
+    });
+
+    const data = await response.json();
+    answerBox.innerText = data.answer || "Not found in document.";
 });
 </script>
 

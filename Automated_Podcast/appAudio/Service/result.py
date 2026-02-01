@@ -17,10 +17,10 @@ SEGp = os.path.join(BASE, "T_segmentation")
 
 # ---------------- FILES ----------------
 GT_TXT = f"{TRANSa}/ground_truth.txt"
-PRED_TXT = f"{TRANSp}/f1c856a5-33f5-4e7c-9bc3-850df73155d2_Bill_Gates_Podcast(128k)_processed.txt"
+PRED_TXT = f"{TRANSp}/48d05850-07c7-403f-be14-c51b1f4e6a9d_How_to_Build_Extreme_Willpower___David_Goggins___Dr._Andrew_Huberman(256k)_processed.txt"
 
 GT_TOPIC = f"{SEGa}/ground_truth_topics.txt"
-PRED_TOPIC = f"{SEGp}/f1c856a5-33f5-4e7c-9bc3-850df73155d2_Bill_Gates_Podcast(128k)_processed_topics.txt"
+PRED_TOPIC = f"{SEGp}/48d05850-07c7-403f-be14-c51b1f4e6a9d_How_to_Build_Extreme_Willpower___David_Goggins___Dr._Andrew_Huberman(256k)_processed_topics.txt"
 
 # ---------------- UTILS ----------------
 def read_text(path):

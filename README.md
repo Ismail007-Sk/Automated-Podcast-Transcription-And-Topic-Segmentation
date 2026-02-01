@@ -13,19 +13,21 @@ To design and implement an **end-to-end automated pipeline** that transforms pod
 - Accurate text transcription  
 - Semantically segmented topics with timestamps  
 - Human-like chapter titles for easy navigation  
+- Context-aware question answering from podcast transcripts  
 
 ---
 
 ## 🧩 Solution Overview
 
-The system is a **Django-based backend application** that provides a one-click automated pipeline. It performs audio preprocessing, speech-to-text transcription, and semantic topic segmentation, all executed **locally without cloud APIs**.
+The system is a **Django-based backend application** that provides a one-click automated pipeline. It performs audio preprocessing, speech-to-text transcription, semantic topic segmentation, and **question answering**, executed using **Groq-powered GenAI**.
 
 **User Workflow:**
 1. Upload podcast audio (any format supported; `.wav` recommended)
 2. Audio preprocessing (noise reduction, silence removal, VAD)
 3. Speech-to-text transcription using Whisper
-4. Semantic topic segmentation with AI-generated titles
-5. Download final outputs:
+4. Semantic topic segmentation with AI-generated titles (Groq API)
+5. Ask natural language questions from the generated transcription
+6. Download final outputs:
    - `transcription.txt`
    - `topic_segmented_timestamps.txt`
 
@@ -35,12 +37,13 @@ The system is a **Django-based backend application** that provides a one-click a
 
 The system follows a modular, pipeline-based architecture:
 
-- Frontend: Audio upload and result download
+- Frontend: Audio upload, question input, and result download
 - Backend: Django-based orchestration
 - Processing Modules:
   - Audio preprocessing
   - Transcription
   - Topic segmentation
+  - Question answering
   - Evaluation
 
 📌 The complete workflow diagram is available in the `assets/` folder.
@@ -54,7 +57,7 @@ The system follows a modular, pipeline-based architecture:
 | Backend | Django |
 | ASR | OpenAI Whisper (Small) |
 | NLP | Sentence Transformers |
-| GenAI | Meta-LLaMA-3.1-8B (GGUF) |
+| GenAI | Groq API (llama-3.3-70b-versatile) |
 | Audio Processing | Librosa, Silero VAD |
 | Evaluation | JiWER, Scikit-learn |
 
@@ -66,7 +69,8 @@ The system follows a modular, pipeline-based architecture:
 |------|---------------|
 | `preprocessing/` | Audio cleaning, noise reduction, silence removal, VAD |
 | `transcription/` | Speech-to-text transcription |
-| `segmentation/` | Semantic topic segmentation & title generation |
+| `segmentation/` | Semantic topic segmentation & title generation (Groq-based) |
+| `question.py` | Question answering from podcast transcription |
 | `pipeline.py` | End-to-end pipeline orchestration |
 | `evaluation.py` | Quality and performance evaluation |
 
@@ -78,42 +82,45 @@ The system generates two user-downloadable files:
 - **`transcription.txt`** – Complete podcast transcript  
 - **`topic_segmented_timestamps.txt`** – Topic-wise timestamps with titles  
 
-These outputs make long podcasts easy to explore and reuse.
+Additionally, users can **interactively query the podcast content** using natural language questions.
 
 ---
-
 ## 📊 Evaluation Metrics
 
 ### 🔹 Transcription Quality
-- **WER:** 0.41  
-- **CER:** 0.331  
+- **WER:** 0.561  
+- **CER:** 0.462  
 
 ### 🔹 Topic Segmentation Performance
-- **Topic Coherence:** 0.547  
-- **Boundary Accuracy:** 0.32  
-- **Total Predicted Topics:** 25  
+- **Topic Coherence:** 0.849  
+- **Semantic Boundary Alignment:** 1.0  
+- **Total Predicted Topics:** 8  
 
 ### 🔹 GenAI Usage
 - ASR Model: Whisper Small  
-- LLM Model: Meta-LLaMA-3.1-8B-Instruct (GGUF)  
-- Purpose: Transcription and human-like topic title generation  
+- LLM Model: llama-3.3-70b-versatile (via Groq API)  
+- Purpose:
+  - ASR output evaluation  
+  - Topic title generation  
 
 ### 🔹 Safety Handling
-- Fully local execution  
+- Hybrid execution (Local ASR + Cloud LLM)  
 - No user data storage  
-- No cloud API usage  
+- Cloud API used: Groq API  
 
 ### 🔹 Cost Awareness
-- Low GPU usage  
-- Zero API cost  
-- Minimal inference overhead  
+- ASR Model: Whisper Small  
+- Reason: Low GPU usage, zero ASR API cost  
+- Inference Cost: Low (local ASR) + API-based (LLM)  
 
 ### 🔹 Code Quality
 - Modular pipeline design  
-- Reusable and readable components  
+- Reusable components  
+- Readable and maintainable code  
 
 ### 🔹 Documentation & Explainability
-- Clear docstrings and inline comments  
+- Clear docstrings  
+- Inline comments  
 - Stepwise, explainable pipeline  
 - Transparent evaluation metrics  
 
@@ -137,22 +144,22 @@ These outputs make long podcasts easy to explore and reuse.
 
 ## 🔐 Safety & Privacy
 
-- Local-only processing  
-- No external data leakage  
-- User data remains private  
+- Secure API-based LLM usage  
+- No persistent storage of user data  
+- API keys managed via environment variables  
 
 ---
 
 ## 📘 Project Resources
 
 All project resources are available in the **`assets/` folder**, including:
-- 📘 **Full Project Report (PDF):**
+- 📘 **Full Project Report (PDF):**  
   [View Report](./Assest_Please_check/Automated-Podcast-Transcription-And-Topic-Segmentation(Infosys-Springboard).pdf)
 
-- 📊 **Project Presentation (PPT):**
+- 📊 **Project Presentation (PPT):**  
   [View Presentation](./Assest_Please_check/Automated-Podcast-Transcription-And-Topic-Segmentation(Infosys-Springboard)PPT.pdf)
 
-- 📊 **Project Workflow :**
+- 📊 **Project Workflow :**  
   [View Presentation](./Assest_Please_check/workflow.png)
 
 📎 Project Video Explanation Google Drive (Demo & Resources):  
